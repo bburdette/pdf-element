@@ -1,0 +1,13 @@
+{
+  "name": "yarnparcelelm",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "elm-hot": "^1.1.2"
+  },
+  "dependencies": {
+    "leaflet": "^1.5.1",
+    "pdfjs-dist": "^2.2.228"
+  }
+}
