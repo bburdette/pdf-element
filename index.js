@@ -1,24 +1,43 @@
 // index.js
 
-import { Elm } from './elm/src/Main.elm'
+// import { Elm } from './elm/src/Main.elm'
 
 // If absolute URL from the remote server is provided, configure the CORS
 // header on that server.
 var url = 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/examples/learning/helloworld.pdf';
 
+// Mozilla's comment.
 // Loaded via <script> tag, create shortcut to access PDF.js exports.
 // var pdfjsLib = window['pdfjs-dist/build/pdf'];
 
 // Qs:
-// does this actually load anything, or are we just creating a web worker?
+// does this actually load anything?
 // would window['blah'] work just as well (poorly)?
-var pdfjsLib = window['pdfjs-dist/build/pdf'];
+// This definitely doesn't seem to be working, "pdfjsLib not found" happens as
+// soon as something tries to use the var.
+// var pdfjsLib = window['dist/pdf.c25250cf'];
 
+// for( var key in window ) {
+//   console.log("key,type", key, typeof(window[key]));
+// }
+
+// var pdfjsLib = window.document.getElementById('pdfscript');
+
+var pdfjsLib = require("./pdfjs/build/pdf.js");
+pdfjsLib.GlobalWorkerOptions.workerSrc ="/pdfjs/pdf.worker.js";
+
+// var pdfjsLib = require("./node_modules/pdfjs-dist/build/pdf.js");
+
+// var pdfjsLib = window.document.getElementById('pdfscript');
+
+// console.log("pdfjsLib: ", pdfjsLib);
 
 // The workerSrc property shall be specified.
 // pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
-// pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdfjs-dist/build/pdf.worker.js';
-// pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf/build/pdf.worker.js';
+
+// pdfjsLib.GlobalWorkerOptions.workerSrc = "./node_modules/pdfjs-dist/build/pdf.worker.js";
+
+// pdfjsLib.GlobalWorkerOptions.workerSrc ="pdf-parcel.e31bb0bc.js";
 
 // Asynchronous download of PDF
 var loadingTask = pdfjsLib.getDocument(url);
@@ -55,8 +74,8 @@ loadingTask.promise.then(function(pdf) {
 });
 
 
-Elm.Main.init({
-  node: document.querySelector('main')
-});
+// Elm.Main.init({
+//   node: document.querySelector('main')
+// });
 
 console.log('hello world');

@@ -7,7 +7,6 @@
     "elm-hot": "^1.1.2"
   },
   "dependencies": {
-    "leaflet": "^1.5.1",
-    "pdfjs-dist": "^2.2.228"
+    "node-ensure": "^0.0.0"
   }
 }
