@@ -24,7 +24,12 @@ var url = 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/examples/le
 // var pdfjsLib = window.document.getElementById('pdfscript');
 
 var pdfjsLib = require("./pdfjs/build/pdf.js");
-pdfjsLib.GlobalWorkerOptions.workerSrc ="/pdfjs/pdf.worker.js";
+
+// pdfjsLib.GlobalWorkerOptions.workerSrc ="/pdfjs/pdf.worker.js";
+// put this into a var so that parcel won't automatically mangle it
+
+var meh ="/pdfjs/pdf.worker.js";
+pdfjsLib.GlobalWorkerOptions.workerPort = new Worker(meh);
 
 // var pdfjsLib = require("./node_modules/pdfjs-dist/build/pdf.js");
 
