@@ -1,6 +1,6 @@
 // index.js
 
-// import { Elm } from './elm/src/Main.elm'
+import { Elm } from './elm/src/Main.elm'
 
 // If absolute URL from the remote server is provided, configure the CORS
 // header on that server.
@@ -21,7 +21,8 @@ var pdfjsLib = require("./pdfjs/build/pdf.js");
 // workerSrc ends up with a 'fake' worker I think.
 // pdfjsLib.GlobalWorkerOptions.workerSrc ="/pdfjs/pdf.worker.js";
 
-// put this into a var so that parcel won't automatically mangle it
+// put this into a var so that parcel won't automatically mangle it,
+// like it would if it was a direct argument of Worker.
 var meh ="/pdfjs/pdf.worker.js";
 pdfjsLib.GlobalWorkerOptions.workerPort = new Worker(meh);
 
@@ -60,8 +61,7 @@ loadingTask.promise.then(function(pdf) {
 });
 
 
-// Elm.Main.init({
-//   node: document.querySelector('main')
-// });
+Elm.Main.init({
+  node: document.querySelector('main')
+});
 
-console.log('hello world');
