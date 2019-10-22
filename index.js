@@ -9,40 +9,21 @@ var url = 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/examples/le
 // Mozilla's comment.
 // Loaded via <script> tag, create shortcut to access PDF.js exports.
 // var pdfjsLib = window['pdfjs-dist/build/pdf'];
+// ^ can't get this to work with parcel
 
-// Qs:
-// does this actually load anything?
-// would window['blah'] work just as well (poorly)?
-// This definitely doesn't seem to be working, "pdfjsLib not found" happens as
-// soon as something tries to use the var.
-// var pdfjsLib = window['dist/pdf.c25250cf'];
-
+// whats in the window?
 // for( var key in window ) {
 //   console.log("key,type", key, typeof(window[key]));
 // }
 
-// var pdfjsLib = window.document.getElementById('pdfscript');
-
 var pdfjsLib = require("./pdfjs/build/pdf.js");
 
+// workerSrc ends up with a 'fake' worker I think.
 // pdfjsLib.GlobalWorkerOptions.workerSrc ="/pdfjs/pdf.worker.js";
-// put this into a var so that parcel won't automatically mangle it
 
+// put this into a var so that parcel won't automatically mangle it
 var meh ="/pdfjs/pdf.worker.js";
 pdfjsLib.GlobalWorkerOptions.workerPort = new Worker(meh);
-
-// var pdfjsLib = require("./node_modules/pdfjs-dist/build/pdf.js");
-
-// var pdfjsLib = window.document.getElementById('pdfscript');
-
-// console.log("pdfjsLib: ", pdfjsLib);
-
-// The workerSrc property shall be specified.
-// pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
-
-// pdfjsLib.GlobalWorkerOptions.workerSrc = "./node_modules/pdfjs-dist/build/pdf.worker.js";
-
-// pdfjsLib.GlobalWorkerOptions.workerSrc ="pdf-parcel.e31bb0bc.js";
 
 // Asynchronous download of PDF
 var loadingTask = pdfjsLib.getDocument(url);
