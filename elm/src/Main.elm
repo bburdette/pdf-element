@@ -7,6 +7,7 @@ import Element.Input as EI
 import Html exposing (Html)
 import Html.Attributes as HA
 import Json.Encode as JE
+import Pdf as P
 
 
 type alias Model =
