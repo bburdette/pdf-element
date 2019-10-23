@@ -1,4 +1,4 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import Browser as B
 import Element as E
@@ -6,6 +6,7 @@ import Element.Border as EB
 import Element.Input as EI
 import Html exposing (Html)
 import Html.Attributes as HA
+import Json.Encode as JE
 
 
 type alias Model =
@@ -14,13 +15,20 @@ type alias Model =
 
 type Msg
     = ShowHide
+    | Render
 
 
-update : Msg -> Model -> Model
+port sendPdfCommand : JE.Value -> Cmd msg
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ShowHide ->
-            { model | show = not model.show }
+            ( { model | show = not model.show }, Cmd.none )
+
+        Render ->
+            ( model, sendPdfCommand JE.null )
 
 
 view : Model -> Html Msg
@@ -31,6 +39,7 @@ view model =
         E.column []
             [ E.text "greetings from elm"
             , EI.button [] { label = E.text "show/hide", onPress = Just ShowHide }
+            , EI.button [] { label = E.text "render", onPress = Just Render }
             , if model.show then
                 E.el [ EB.width 5 ] <|
                     E.html <|
@@ -43,9 +52,19 @@ view model =
             ]
 
 
+type alias Flags =
+    ()
+
+
+init : Flags -> ( Model, Cmd Msg )
+init flags =
+    ( { show = True }, Cmd.none )
+
+
 main =
-    B.sandbox
-        { init = { show = True }
+    B.element
+        { init = init
+        , subscriptions = \_ -> Sub.none
         , view = view
         , update = update
         }
