@@ -132,7 +132,7 @@ type alias Flags =
 
 init : Flags -> ( Model, Cmd Msg )
 init _ =
-    ( { show = False, pdfName = Nothing }, Cmd.none )
+    ( { show = True, pdfName = Nothing }, Cmd.none )
 
 
 main : Program Flags Model Msg
