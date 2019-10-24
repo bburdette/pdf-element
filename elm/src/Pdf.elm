@@ -28,12 +28,12 @@ like so:
 
       port sendPdfCommand : JE.Value -> Cmd msg
 
-      wssend =
+      pdfsend =
           Pdf.send sendPdfCommand
 
 then you can call (makes a Cmd):
 
-      wssend <|
+      pdfsend <|
           Pdf.Send
               { name = "touchpage"
               , content = dta
@@ -84,7 +84,7 @@ The name should be the same string you used in Connect.
 -}
 type PdfMsg
     = Error { name : String, error : String }
-    | DocId { name : String, id : String }
+    | Loaded { name : String }
 
 
 {-| encode websocket commands into json.
@@ -119,10 +119,9 @@ decodeMsg =
                             (JD.field "name" JD.string)
                             (JD.field "error" JD.string)
 
-                    "docId" ->
-                        JD.map2 (\a b -> DocId { name = a, id = b })
+                    "loaded" ->
+                        JD.map (\a -> Loaded { name = a })
                             (JD.field "name" JD.string)
-                            (JD.field "id" JD.string)
 
                     unk ->
                         JD.fail <| "unknown websocketmsg type: " ++ unk

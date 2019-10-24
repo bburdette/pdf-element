@@ -1,5 +1,55 @@
 // index.js
 
+function renderPdf (pdf, canvas) {
+  pdf.getPage(1).then(function(page) {
+    console.log('rpfs Page loaded');
+    
+    var scale = 1.5;
+    var viewport = page.getViewport({scale: scale});
+
+    // Prepare canvas using PDF page dimensions
+    // var canvas = document.getElementById('elm-canvas');
+    var context = canvas.getContext('2d');
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
+
+    console.log("viewpower w, h", viewport.width, viewport.height);
+
+    // Render PDF page into canvas context
+    var renderContext = {
+      canvasContext: context,
+      viewport: viewport
+    };
+    var renderTask = page.render(renderContext);
+    renderTask.promise.then(function () {
+      console.log('renderPDF page rendered');
+    });
+  });
+}
+
+class PdfElement extends HTMLElement {
+// class PdfElement extends HTMLCanvasElement {
+  connectedCallback() {
+    console.log("connectedCallback");
+    var pdfName = this.getAttribute("name");
+    console.log("pdfName", pdfName);
+    var pdf = myPdfs[pdfName];
+    if (pdf) {
+      renderPdf(pdf, this.canvas);
+    }
+  }
+
+  constructor() {
+    super();
+    console.log("pdfelement consgtructores");
+    this.attachShadow({mode:'open'});
+    this.canvas = document.createElement('canvas');
+  }
+}
+
+customElements.define('pdf-element', PdfElement );
+// customElements.define('pdf-element', PdfElement, { extends: 'canvas' });
+// customElements.define('pdf-element', PdfElement, { extends: 'p' });
 
 var myPdfs = {};
 
@@ -14,15 +64,14 @@ function sendPdfCommand(cmd) {
       // At this point store 'pdf' into an array?
       myPdfs[cmd.name] = pdf;
 
-      app.ports.receivePdfMsg.send({ msg: "docId"
-                                    , name : wat.name
-                                    , docId : wat.name
+      app.ports.receivePdfMsg.send({ msg: "loaded"
+                                    , name : cmd.name
                                     } );
 
     }, function (reason) {
       // PDF loading error
       app.ports.receivePdfMsg.send({ msg: "error"
-                                    , name : wat.name
+                                    , name : cmd.name
                                     , error : error
                                     } );
       console.error(reason);
@@ -63,6 +112,7 @@ import * as pdfjsLib from "./pdfjs/build/pdf.js"
 var meh ="/pdfjs/pdf.worker.js";
 pdfjsLib.GlobalWorkerOptions.workerPort = new Worker(meh);
 
+
 var myPdf = null;
 
 // Asynchronous download of PDF
@@ -102,7 +152,7 @@ loadingTask.promise.then(function(pdf) {
   console.error(reason);
 });
 
-function render () {
+function renderMyPdf () {
   myPdf.getPage(1).then(function(page) {
     console.log('Page loaded');
     
@@ -136,5 +186,5 @@ var app = Elm.Main.init({
   node: document.querySelector('main')
 });
 
-app.ports.render.subscribe(render);
+app.ports.render.subscribe(renderMyPdf);
 app.ports.sendPdfCommand.subscribe(sendPdfCommand);
