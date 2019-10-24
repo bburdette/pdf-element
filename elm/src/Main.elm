@@ -6,20 +6,35 @@ import Element.Border as EB
 import Element.Input as EI
 import Html exposing (Html)
 import Html.Attributes as HA
+import Json.Decode as JD
 import Json.Encode as JE
-import Pdf as P
+import Pdf
 
 
 type alias Model =
-    { show : Bool }
+    { show : Bool
+    , pdfId : Maybe String
+    }
 
 
 type Msg
     = ShowHide
     | Render
+    | PdfMsg (Result JD.Error Pdf.PdfMsg)
+
+
+port render : JE.Value -> Cmd msg
 
 
 port sendPdfCommand : JE.Value -> Cmd msg
+
+
+port receivePdfMsg : (JD.Value -> msg) -> Sub msg
+
+
+pdfreceive : Sub Msg
+pdfreceive =
+    receivePdfMsg <| Pdf.receive PdfMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -29,7 +44,10 @@ update msg model =
             ( { model | show = not model.show }, Cmd.none )
 
         Render ->
-            ( model, sendPdfCommand JE.null )
+            ( model, render JE.null )
+
+        PdfMsg _ ->
+            ( model, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -58,8 +76,8 @@ type alias Flags =
 
 
 init : Flags -> ( Model, Cmd Msg )
-init flags =
-    ( { show = True }, Cmd.none )
+init _ =
+    ( { show = True, pdfId = Nothing }, Cmd.none )
 
 
 main =

@@ -47,21 +47,22 @@ send portfn wsc =
 
 {-| make a subscription function with receive and a port, like so:
 
-      port receiveSocketMsg : (JD.Value -> msg) -> Sub msg
+      port receivePdfMsg : (JD.Value -> msg) -> Sub msg
 
-      wsreceive =
-          receiveSocketMsg <| Pdf.receive WsMsg
+      pdfreceive : Sub Msg
+      pdfreceive =
+          receivePdfMsg <| Pdf.receive PdfMsg
 
-Where WsMessage is defined in your app like this:
+Where PdfMessage is defined in your app like this:
 
       type Msg
-          = WsMsg (Result JD.Error Pdf.PdfMsg)
+          = PdfMsg (Result JD.Error Pdf.PdfMsg)
           | <other message types>
 
 then in your application subscriptions:
 
       subscriptions =
-          \_ -> wsreceive
+          \_ -> pdfreceive
 
 -}
 receive : (Result JD.Error PdfMsg -> msg) -> (JD.Value -> msg)
@@ -72,13 +73,6 @@ receive wsmMsg =
 
 
 {-| PdfCmds go from from elm out to javascript to be processed.
-
-  - name: You should give each websocket connection a unique name.
-  - address: is the websocket address, for instance "<ws://127.0.0.1:9000">.
-  - protocol: is an extra string to help the server know what kind of data to expect, like
-    if your server handled either json or binary data. Probably you can just pass it "".
-  - content: the data you're sending through the socket.
-
 -}
 type PdfCmd
     = Open { name : String, url : String }

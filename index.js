@@ -1,6 +1,40 @@
 // index.js
 
-import { Elm } from './elm/src/Main.elm'
+
+var myPdfs = {};
+
+function sendPdfCommand(cmd) {
+  // console.log( "ssc: " +  JSON.stringify(cmd, null, 4));
+  if (cmd.cmd == "open")
+  {
+    // Asynchronous download of PDF
+    pdfjsLib.getDocument(cmd.url).promise.then(function(pdf) {
+      console.log('PDF loaded');
+
+      // At this point store 'pdf' into an array?
+      myPdfs[cmd.name] = pdf;
+
+      app.ports.receivePdfMsg.send({ msg: "docId"
+                                    , name : wat.name
+                                    , docId : wat.name
+                                    } );
+
+    }, function (reason) {
+      // PDF loading error
+      app.ports.receivePdfMsg.send({ msg: "error"
+                                    , name : wat.name
+                                    , error : error
+                                    } );
+      console.error(reason);
+    })
+  }
+  else if (cmd.cmd == "close")
+  {
+    // console.log("closing pdf: " + cmd.name);
+    // myPdfs[cmd.name].close();
+    delete myPdfs[cmd.name];
+  }
+}
 
 // If absolute URL from the remote server is provided, configure the CORS
 // header on that server.
@@ -93,7 +127,14 @@ function render () {
   });
 }
 
+// --------------------------------------------------------
+// init elm
+// --------------------------------------------------------
+import { Elm } from './elm/src/Main.elm'
+
 var app = Elm.Main.init({
   node: document.querySelector('main')
 });
-app.ports.sendPdfCommand.subscribe(render);
+
+app.ports.render.subscribe(render);
+app.ports.sendPdfCommand.subscribe(sendPdfCommand);
