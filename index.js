@@ -15,6 +15,7 @@ function renderPdf (pdf, canvas) {
 
     console.log("viewpower w, h", viewport.width, viewport.height);
 
+    // testCanvas(context);
     // Render PDF page into canvas context
     var renderContext = {
       canvasContext: context,
@@ -25,6 +26,26 @@ function renderPdf (pdf, canvas) {
       console.log('renderPDF page rendered');
     });
   });
+}
+
+function testCanvas(ctx) {
+    // --------------------------------
+    // Set line width
+    ctx.lineWidth = 10;
+
+    // Wall
+    ctx.strokeRect(75, 140, 150, 110);
+
+    // Door
+    ctx.fillRect(130, 190, 40, 60);
+
+    // Roof
+    ctx.moveTo(50, 140);
+    ctx.lineTo(150, 60);
+    ctx.lineTo(250, 140);
+    ctx.closePath();
+    ctx.stroke();
+
 }
 
 class PdfElement extends HTMLElement {
@@ -42,12 +63,14 @@ class PdfElement extends HTMLElement {
   constructor() {
     super();
     console.log("pdfelement consgtructores");
-    this.attachShadow({mode:'open'});
+    var shadow = this.attachShadow({mode:'open'});
     this.canvas = document.createElement('canvas');
+    shadow.appendChild(this.canvas);
   }
 }
 
-customElements.define('pdf-element', PdfElement );
+customElements.define('pdf-element', PdfElement  );
+// customElements.define('pdf-element', PdfElement, { extends: 'div' } );
 // customElements.define('pdf-element', PdfElement, { extends: 'canvas' });
 // customElements.define('pdf-element', PdfElement, { extends: 'p' });
 
@@ -59,7 +82,7 @@ function sendPdfCommand(cmd) {
   {
     // Asynchronous download of PDF
     pdfjsLib.getDocument(cmd.url).promise.then(function(pdf) {
-      console.log('PDF loaded');
+      console.log('PDF loaded 2');
 
       // At this point store 'pdf' into an array?
       myPdfs[cmd.name] = pdf;
@@ -124,29 +147,7 @@ loadingTask.promise.then(function(pdf) {
   myPdf = pdf;
   
   // Fetch the first page
-  var pageNumber = 1;
-  pdf.getPage(pageNumber).then(function(page) {
-    console.log('Page loaded');
-    
-    var scale = 3.5;
-    var viewport = page.getViewport({scale: scale});
-
-    // Prepare canvas using PDF page dimensions
-    var canvas = document.getElementById('elm-canvas');
-    var context = canvas.getContext('2d');
-    canvas.height = viewport.height;
-    canvas.width = viewport.width;
-
-    // Render PDF page into canvas context
-    var renderContext = {
-      canvasContext: context,
-      viewport: viewport
-    };
-    var renderTask = page.render(renderContext);
-    renderTask.promise.then(function () {
-      console.log('Page rendered');
-    });
-  });
+  renderMyPdf();
 }, function (reason) {
   // PDF loading error
   console.error(reason);
@@ -164,6 +165,8 @@ function renderMyPdf () {
     var context = canvas.getContext('2d');
     canvas.height = viewport.height;
     canvas.width = viewport.width;
+
+    // testCanvas(context);
 
     // Render PDF page into canvas context
     var renderContext = {
