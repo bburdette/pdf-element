@@ -9,9 +9,4 @@ var app = Elm.Main.init({
   node: document.querySelector('main')
 });
 
-console.log("pdfe: ", pdfe);
-
-
-var spc = pdfe.pdfCommandReceiver(app);
-
-app.ports.sendPdfCommand.subscribe(spc);
+app.ports.sendPdfCommand.subscribe(pdfe.pdfCommandReceiver(app));

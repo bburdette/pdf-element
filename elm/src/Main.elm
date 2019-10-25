@@ -6,11 +6,14 @@ import Element.Background as EBg
 import Element.Border as EB
 import Element.Font as EF
 import Element.Input as EI
+import File exposing (File)
+import File.Select as FS
 import Html exposing (Html)
 import Html.Attributes as HA
 import Json.Decode as JD
 import Json.Encode as JE
 import Pdf
+import Task
 
 
 type alias Model =
@@ -21,7 +24,10 @@ type alias Model =
 
 type Msg
     = ShowHide
+    | OpenClick
     | LoadClick
+    | PdfOpened File
+    | PdfExtracted String
     | PdfMsg (Result JD.Error Pdf.PdfMsg)
 
 
@@ -62,7 +68,21 @@ update msg model =
             ( { model | show = not model.show }, Cmd.none )
 
         LoadClick ->
-            ( model, pdfsend <| Pdf.Open { name = "blah", url = url } )
+            ( model, pdfsend <| Pdf.OpenUrl { name = "blah", url = url } )
+
+        OpenClick ->
+            ( model, FS.file [ "application/pdf" ] PdfOpened )
+
+        PdfOpened file ->
+            ( model, Task.perform PdfExtracted (File.toUrl file) )
+
+        PdfExtracted string ->
+            case String.split "base64," string of
+                [ a, b ] ->
+                    ( model, pdfsend <| Pdf.OpenString { name = "blah", string = b } )
+
+                _ ->
+                    ( model, Cmd.none )
 
         PdfMsg ms ->
             let
@@ -87,19 +107,16 @@ view model =
     <|
         E.column [ E.spacing 5 ]
             [ E.text "greetings from elm"
+            , EI.button buttonStyle { label = E.text "open pdf", onPress = Just OpenClick }
+            , EI.button buttonStyle { label = E.text "load pdf", onPress = Just LoadClick }
+            , EI.button buttonStyle { label = E.text "show/hide", onPress = Just ShowHide }
             , case model.pdfName of
                 Just name ->
                     if model.show then
                         E.column []
                             [ E.el [ E.width <| E.px 800, E.height <| E.px 800, EB.width 5 ] <|
                                 E.html <|
-                                    Html.node "pdf-element"
-                                        [ HA.attribute "name" <|
-                                            Debug.log "name is: " name
-                                        ]
-                                        []
-
-                            -- [ E.html <| Html.node "canvas" [ HA.attribute "name" name ] []
+                                    Html.node "pdf-element" [ HA.attribute "name" name ] []
                             , E.text name
                             ]
 
@@ -108,8 +125,6 @@ view model =
 
                 Nothing ->
                     E.none
-            , EI.button buttonStyle { label = E.text "load pdf", onPress = Just LoadClick }
-            , EI.button buttonStyle { label = E.text "show/hide", onPress = Just ShowHide }
             ]
 
 

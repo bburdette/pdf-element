@@ -34,7 +34,7 @@ function renderPdf (pdf, canvas) {
   pdf.getPage(1).then(function(page) {
     console.log('rpfs Page loaded');
     
-    var scale = 3.5;
+    var scale = 1.5;
     var viewport = page.getViewport({scale: scale});
 
     // Prepare canvas using PDF page dimensions
@@ -63,7 +63,7 @@ var myPdfs = {};
 function pdfCommandReceiver(app) {
   return function (cmd) {
     // console.log( "ssc: " +  JSON.stringify(cmd, null, 4));
-    if (cmd.cmd == "open")
+    if (cmd.cmd == "openurl")
     {
       // Asynchronous download of PDF
       pdfjsLib.getDocument(cmd.url).promise.then(function(pdf) {
@@ -81,6 +81,30 @@ function pdfCommandReceiver(app) {
         app.ports.receivePdfMsg.send({ msg: "error"
                                       , name : cmd.name
                                       , error : error
+                                      } );
+        console.error(reason);
+      })
+    } else if (cmd.cmd == "openstring")
+    {
+      // convert the base64 string to arraybytes.
+      // var buff = new ArrayBuffer(atob(cmd.string));
+      var buff =  Uint8Array.from(atob(cmd.string), c => c.charCodeAt(0));
+      // Asynchronous download of PDF
+      pdfjsLib.getDocument(buff).promise.then(function(pdf) {
+        console.log('PDF loaded 2');
+
+        // At this point store 'pdf' into an array?
+        myPdfs[cmd.name] = pdf;
+
+        app.ports.receivePdfMsg.send({ msg: "loaded"
+                                      , name : cmd.name
+                                      } );
+
+      }, function (reason) {
+        // PDF loading error
+        app.ports.receivePdfMsg.send({ msg: "error"
+                                      , name : cmd.name
+                                      , error : reason
                                       } );
         console.error(reason);
       })

@@ -75,7 +75,8 @@ receive wsmMsg =
 {-| PdfCmds go from from elm out to javascript to be processed.
 -}
 type PdfCmd
-    = Open { name : String, url : String }
+    = OpenUrl { name : String, url : String }
+    | OpenString { name : String, string : String }
     | Close { name : String }
 
 
@@ -92,11 +93,18 @@ type PdfMsg
 encodeCmd : PdfCmd -> JE.Value
 encodeCmd cmd =
     case cmd of
-        Open msg ->
+        OpenUrl msg ->
             JE.object
-                [ ( "cmd", JE.string "open" )
+                [ ( "cmd", JE.string "openurl" )
                 , ( "name", JE.string msg.name )
                 , ( "url", JE.string msg.url )
+                ]
+
+        OpenString msg ->
+            JE.object
+                [ ( "cmd", JE.string "openstring" )
+                , ( "name", JE.string msg.name )
+                , ( "string", JE.string msg.string )
                 ]
 
         Close msg ->
