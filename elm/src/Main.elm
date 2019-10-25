@@ -21,17 +21,14 @@ type alias Model =
 
 type Msg
     = ShowHide
-    | Render
     | LoadClick
     | PdfMsg (Result JD.Error Pdf.PdfMsg)
-
-
-port render : JE.Value -> Cmd msg
 
 
 port sendPdfCommand : JE.Value -> Cmd msg
 
 
+pdfsend : Pdf.PdfCmd -> Cmd Msg
 pdfsend =
     Pdf.send sendPdfCommand
 
@@ -64,9 +61,6 @@ update msg model =
         ShowHide ->
             ( { model | show = not model.show }, Cmd.none )
 
-        Render ->
-            ( model, render JE.null )
-
         LoadClick ->
             ( model, pdfsend <| Pdf.Open { name = "blah", url = url } )
 
@@ -93,36 +87,29 @@ view model =
     <|
         E.column [ E.spacing 5 ]
             [ E.text "greetings from elm"
-            , EI.button buttonStyle { label = E.text "show/hide", onPress = Just ShowHide }
-            , EI.button buttonStyle { label = E.text "render", onPress = Just Render }
-            , if model.show then
-                E.el [ EB.width 5 ] <|
-                    E.html <|
-                        Html.canvas [ HA.id "elm-canvas" ]
-                            []
-
-              else
-                E.none
-            , E.text "look at my pdf ^"
             , case model.pdfName of
                 Just name ->
-                    E.column []
-                        [ E.el [ E.width <| E.px 800, E.height <| E.px 800, EB.width 5 ] <|
-                            E.html <|
-                                Html.node "pdf-element"
-                                    [ HA.attribute "name" <|
-                                        Debug.log "name is: " name
-                                    ]
-                                    []
+                    if model.show then
+                        E.column []
+                            [ E.el [ E.width <| E.px 800, E.height <| E.px 800, EB.width 5 ] <|
+                                E.html <|
+                                    Html.node "pdf-element"
+                                        [ HA.attribute "name" <|
+                                            Debug.log "name is: " name
+                                        ]
+                                        []
 
-                        -- [ E.html <| Html.node "canvas" [ HA.attribute "name" name ] []
-                        , E.text name
-                        ]
+                            -- [ E.html <| Html.node "canvas" [ HA.attribute "name" name ] []
+                            , E.text name
+                            ]
+
+                    else
+                        E.none
 
                 Nothing ->
                     E.none
-            , EI.button buttonStyle { label = E.text "load other", onPress = Just LoadClick }
-            , E.text <| "look at my other pdf ^"
+            , EI.button buttonStyle { label = E.text "load pdf", onPress = Just LoadClick }
+            , EI.button buttonStyle { label = E.text "show/hide", onPress = Just ShowHide }
             ]
 
 
