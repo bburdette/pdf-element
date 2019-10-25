@@ -4,7 +4,7 @@ function renderPdf (pdf, canvas) {
   pdf.getPage(1).then(function(page) {
     console.log('rpfs Page loaded');
     
-    var scale = 1.5;
+    var scale = 3.5;
     var viewport = page.getViewport({scale: scale});
 
     // Prepare canvas using PDF page dimensions
@@ -45,7 +45,6 @@ function testCanvas(ctx) {
     ctx.lineTo(250, 140);
     ctx.closePath();
     ctx.stroke();
-
 }
 
 class PdfElement extends HTMLElement {
@@ -69,10 +68,7 @@ class PdfElement extends HTMLElement {
   }
 }
 
-customElements.define('pdf-element', PdfElement  );
-// customElements.define('pdf-element', PdfElement, { extends: 'div' } );
-// customElements.define('pdf-element', PdfElement, { extends: 'canvas' });
-// customElements.define('pdf-element', PdfElement, { extends: 'p' });
+customElements.define('pdf-element', PdfElement );
 
 var myPdfs = {};
 
