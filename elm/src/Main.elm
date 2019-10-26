@@ -131,12 +131,19 @@ topBar : Model -> Element Msg
 topBar model =
     E.row [ E.width E.fill, EBg.color <| E.rgb 0.4 0.4 0.4, E.spacing 5, E.paddingXY 5 5 ]
         [ EI.button buttonStyle { label = E.text "open pdf", onPress = Just OpenClick }
-        , EI.text [ E.width <| E.px 100 ]
-            { onChange = ZoomChanged
-            , text = model.zoomText
-            , placeholder = Nothing
-            , label = EI.labelLeft [ EF.color <| E.rgb 1 1 1, E.centerY ] <| E.text "zoom"
-            }
+        , E.el [ E.width E.shrink ] <|
+            EI.text [ E.width <| E.px 100 ]
+                { onChange = ZoomChanged
+                , text = model.zoomText
+                , placeholder = Nothing
+                , label = EI.labelLeft [ EF.color <| E.rgb 1 1 1, E.centerY ] <| E.text "zoom"
+                }
+        , case model.pdfName of
+            Just name ->
+                E.el [ E.centerX ] <| E.text name
+
+            Nothing ->
+                E.none
         , E.el [ EF.color <| E.rgb 1 1 1 ] <|
             E.text <|
                 "Page: "
@@ -156,27 +163,28 @@ view model =
     E.layout
         [ E.inFront <| topBar model ]
     <|
-        E.column [ E.spacing 5 ]
+        E.column [ E.spacing 5, E.width E.fill, E.alignTop ]
             [ E.el [ E.transparent True ] <| topBar model
             , case model.pdfName of
                 Just name ->
                     if model.show then
-                        E.column
-                            [ E.scrollbars
-                            , E.width E.fill
-                            , E.height E.fill
-                            , E.alignTop
-                            ]
-                            [ E.el
-                                [ E.width E.shrink
-                                , E.centerX
-                                , EB.width 5
+                        E.row [ E.width E.fill, E.alignTop ]
+                            [ E.column
+                                [ E.width E.fill
+                                , E.height E.fill
                                 , E.alignTop
+                                , E.paddingXY 5 0
                                 ]
-                              <|
-                                E.html <|
-                                    Pdf.pdfPage name model.page model.zoom
-                            , E.text name
+                                [ E.el
+                                    [ E.width E.shrink
+                                    , E.centerX
+                                    , EB.width 5
+                                    , E.alignTop
+                                    ]
+                                  <|
+                                    E.html <|
+                                        Pdf.pdfPage name model.page model.zoom
+                                ]
                             ]
 
                     else
