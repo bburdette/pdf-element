@@ -113,10 +113,10 @@ view model =
             , case model.pdfName of
                 Just name ->
                     if model.show then
-                        E.column []
-                            [ E.el [ E.width <| E.px 800, E.height <| E.px 800, EB.width 5 ] <|
+                        E.column [ E.scrollbars ]
+                            [ E.el [ E.width <| E.px 400, E.height <| E.px 400, EB.width 5 ] <|
                                 E.html <|
-                                    Html.node "pdf-element" [ HA.attribute "name" name ] []
+                                    Pdf.pdfPage name
                             , E.text name
                             ]
 

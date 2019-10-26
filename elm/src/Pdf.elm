@@ -5,6 +5,7 @@ module Pdf exposing
     , encodeCmd
     , receive
     , send
+    , pdfPage
     )
 
 {-| This Pdf Elm module lets you encode and decode messages to pass to javascript,
@@ -19,8 +20,15 @@ where the actual websocket sending and receiving will take place. See the README
 
 -}
 
+import Html exposing (Html)
+import Html.Attributes as HA
 import Json.Decode as JD
 import Json.Encode as JE
+
+
+pdfPage : String -> Html msg
+pdfPage name =
+    Html.node "pdf-element" [ HA.attribute "name" name ] []
 
 
 {-| use send to make a websocket convenience function,
