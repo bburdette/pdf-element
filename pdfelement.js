@@ -12,10 +12,11 @@ class PdfElement extends HTMLElement {
   connectedCallback() {
     console.log("connectedCallback");
     var pdfName = this.getAttribute("name");
+    var pdfPage = parseInt(this.getAttribute("page"));
     console.log("pdfName", pdfName);
     var pdf = myPdfs[pdfName];
     if (pdf) {
-      renderPdf(pdf, this.canvas);
+      renderPdf(pdf, this.canvas, pdfPage);
     }
   }
 
@@ -30,8 +31,8 @@ class PdfElement extends HTMLElement {
 
 customElements.define('pdf-element', PdfElement );
 
-function renderPdf (pdf, canvas) {
-  pdf.getPage(1).then(function(page) {
+function renderPdf (pdf, canvas, pageno) {
+  pdf.getPage(pageno).then(function(page) {
     console.log('rpfs Page loaded');
     
     var scale = 1.5;
@@ -60,7 +61,7 @@ function renderPdf (pdf, canvas) {
 
 var myPdfs = {};
 
-function pdfCommandReceiver(app) {
+function pdfCommandReceiver(elmApp) {
   return function (cmd) {
     // console.log( "ssc: " +  JSON.stringify(cmd, null, 4));
     if (cmd.cmd == "openurl")
@@ -72,13 +73,13 @@ function pdfCommandReceiver(app) {
         // At this point store 'pdf' into an array?
         myPdfs[cmd.name] = pdf;
 
-        app.ports.receivePdfMsg.send({ msg: "loaded"
+        elmApp.ports.receivePdfMsg.send({ msg: "loaded"
                                       , name : cmd.name
                                       } );
 
       }, function (reason) {
         // PDF loading error
-        app.ports.receivePdfMsg.send({ msg: "error"
+        elmApp.ports.receivePdfMsg.send({ msg: "error"
                                       , name : cmd.name
                                       , error : error
                                       } );
@@ -96,13 +97,14 @@ function pdfCommandReceiver(app) {
         // At this point store 'pdf' into an array?
         myPdfs[cmd.name] = pdf;
 
-        app.ports.receivePdfMsg.send({ msg: "loaded"
+        elmApp.ports.receivePdfMsg.send({ msg: "loaded"
                                       , name : cmd.name
+                                      , pageCount : pdf.numPages
                                       } );
 
       }, function (reason) {
         // PDF loading error
-        app.ports.receivePdfMsg.send({ msg: "error"
+        elmApp.ports.receivePdfMsg.send({ msg: "error"
                                       , name : cmd.name
                                       , error : reason
                                       } );

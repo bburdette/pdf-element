@@ -26,9 +26,13 @@ import Json.Decode as JD
 import Json.Encode as JE
 
 
-pdfPage : String -> Html msg
-pdfPage name =
-    Html.node "pdf-element" [ HA.attribute "name" name ] []
+pdfPage : String -> Int -> Html msg
+pdfPage name page =
+    Html.node "pdf-element"
+        [ HA.attribute "name" name
+        , HA.attribute "page" (String.fromInt page)
+        ]
+        []
 
 
 {-| use send to make a websocket convenience function,
@@ -93,7 +97,7 @@ The name should be the same string you used in Connect.
 -}
 type PdfMsg
     = Error { name : String, error : String }
-    | Loaded { name : String }
+    | Loaded { name : String, pageCount : Int }
 
 
 {-| encode websocket commands into json.
@@ -136,8 +140,9 @@ decodeMsg =
                             (JD.field "error" JD.string)
 
                     "loaded" ->
-                        JD.map (\a -> Loaded { name = a })
+                        JD.map2 (\a b -> Loaded { name = a, pageCount = b })
                             (JD.field "name" JD.string)
+                            (JD.field "pageCount" JD.int)
 
                     unk ->
                         JD.fail <| "unknown websocketmsg type: " ++ unk
