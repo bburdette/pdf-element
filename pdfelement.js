@@ -13,10 +13,11 @@ class PdfElement extends HTMLElement {
     console.log("connectedCallback");
     var pdfName = this.getAttribute("name");
     var pdfPage = parseInt(this.getAttribute("page"));
+    var pdfScale = parseFloat(this.getAttribute("scale"));
     console.log("pdfName", pdfName);
     var pdf = myPdfs[pdfName];
     if (pdf) {
-      renderPdf(pdf, this.canvas, pdfPage);
+      renderPdf(pdf, this.canvas, pdfPage, pdfScale);
     }
   }
 
@@ -31,11 +32,10 @@ class PdfElement extends HTMLElement {
 
 customElements.define('pdf-element', PdfElement );
 
-function renderPdf (pdf, canvas, pageno) {
+function renderPdf (pdf, canvas, pageno, scale) {
   pdf.getPage(pageno).then(function(page) {
     console.log('rpfs Page loaded');
     
-    var scale = 1.5;
     var viewport = page.getViewport({scale: scale});
 
     // Prepare canvas using PDF page dimensions

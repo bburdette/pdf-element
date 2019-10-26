@@ -27,14 +27,15 @@ import Json.Decode as JD
 import Json.Encode as JE
 
 
-pdfPage : String -> Int -> Html msg
-pdfPage name page =
+pdfPage : String -> Int -> Float -> Html msg
+pdfPage name page scale =
     HK.node "span"
         []
-        [ ( name ++ String.fromInt page
+        [ ( name ++ String.fromInt page ++ String.fromFloat scale
           , Html.node "pdf-element"
                 [ HA.attribute "name" name
                 , HA.attribute "page" (String.fromInt page)
+                , HA.attribute "scale" (String.fromFloat scale)
                 ]
                 []
           )

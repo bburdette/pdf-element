@@ -27,13 +27,12 @@ type alias Model =
 
 
 type Msg
-    = ShowHide
-    | OpenClick
+    = OpenClick
     | PrevPage
     | NextPage
     | PdfOpened File
     | ZoomChanged String
-    | PdfExtracted String
+    | PdfExtracted String String
     | PdfMsg (Result JD.Error Pdf.PdfMsg)
 
 
@@ -66,19 +65,16 @@ buttonStyle =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ShowHide ->
-            ( { model | show = not model.show }, Cmd.none )
-
         OpenClick ->
             ( model, FS.file [ "application/pdf" ] PdfOpened )
 
         PdfOpened file ->
-            ( model, Task.perform PdfExtracted (File.toUrl file) )
+            ( model, Task.perform (PdfExtracted (File.name file)) (File.toUrl file) )
 
-        PdfExtracted string ->
+        PdfExtracted name string ->
             case String.split "base64," string of
                 [ a, b ] ->
-                    ( model, pdfsend <| Pdf.OpenString { name = "blah", string = b } )
+                    ( { model | page = 1 }, pdfsend <| Pdf.OpenString { name = name, string = b } )
 
                 _ ->
                     ( model, Cmd.none )
@@ -133,22 +129,23 @@ update msg model =
 
 topBar : Model -> Element Msg
 topBar model =
-    E.row [ E.width E.fill ]
+    E.row [ E.width E.fill, EBg.color <| E.rgb 0.4 0.4 0.4, E.spacing 5, E.paddingXY 5 5 ]
         [ EI.button buttonStyle { label = E.text "open pdf", onPress = Just OpenClick }
-        , EI.text []
+        , EI.text [ E.width <| E.px 100 ]
             { onChange = ZoomChanged
             , text = model.zoomText
             , placeholder = Nothing
-            , label = EI.labelLeft [ E.centerY ] <| E.text "zoom"
+            , label = EI.labelLeft [ EF.color <| E.rgb 1 1 1, E.centerY ] <| E.text "zoom"
             }
-        , E.text <|
-            "Page: "
-                ++ String.fromInt model.page
-                ++ " of "
-                ++ (model.pageCount
-                        |> Maybe.map String.fromInt
-                        |> Maybe.withDefault "?"
-                   )
+        , E.el [ EF.color <| E.rgb 1 1 1 ] <|
+            E.text <|
+                "Page: "
+                    ++ String.fromInt model.page
+                    ++ " of "
+                    ++ (model.pageCount
+                            |> Maybe.map String.fromInt
+                            |> Maybe.withDefault "?"
+                       )
         , EI.button buttonStyle { label = E.text "prev", onPress = Just PrevPage }
         , EI.button buttonStyle { label = E.text "next", onPress = Just NextPage }
         ]
@@ -160,18 +157,25 @@ view model =
         [ E.inFront <| topBar model ]
     <|
         E.column [ E.spacing 5 ]
-            [ case model.pdfName of
+            [ E.el [ E.transparent True ] <| topBar model
+            , case model.pdfName of
                 Just name ->
                     if model.show then
-                        E.column [ E.scrollbars, E.width E.fill, E.height E.fill ]
+                        E.column
+                            [ E.scrollbars
+                            , E.width E.fill
+                            , E.height E.fill
+                            , E.alignTop
+                            ]
                             [ E.el
                                 [ E.width E.shrink
                                 , E.centerX
                                 , EB.width 5
+                                , E.alignTop
                                 ]
                               <|
                                 E.html <|
-                                    Pdf.pdfPage name model.page
+                                    Pdf.pdfPage name model.page model.zoom
                             , E.text name
                             ]
 
