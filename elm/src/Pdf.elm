@@ -22,17 +22,23 @@ where the actual websocket sending and receiving will take place. See the README
 
 import Html exposing (Html)
 import Html.Attributes as HA
+import Html.Keyed as HK
 import Json.Decode as JD
 import Json.Encode as JE
 
 
 pdfPage : String -> Int -> Html msg
 pdfPage name page =
-    Html.node "pdf-element"
-        [ HA.attribute "name" name
-        , HA.attribute "page" (String.fromInt page)
-        ]
+    HK.node "span"
         []
+        [ ( name ++ String.fromInt page
+          , Html.node "pdf-element"
+                [ HA.attribute "name" name
+                , HA.attribute "page" (String.fromInt page)
+                ]
+                []
+          )
+        ]
 
 
 {-| use send to make a websocket convenience function,
