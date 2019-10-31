@@ -1,11 +1,11 @@
-import * as pdfjsLib from "./pdfjs/build/pdf.js"
+import * as pdfjsLib from "./node_modules/pdfjs-dist/build/pdf.js"
 
 export { pdfCommandReceiver }
 
 // put this into a var so that parcel won't automatically mangle it,
 // like it would if it was a direct argument of Worker.
 // with this method you have to manually place pdf.worker.js into dist.
-var meh ="/pdfjs/pdf.worker.js";
+var meh ="./pdf.worker.js";
 pdfjsLib.GlobalWorkerOptions.workerPort = new Worker(meh);
 
 class PdfElement extends HTMLElement {
