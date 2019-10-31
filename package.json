@@ -5,6 +5,7 @@
   "license": "MIT",
   "devDependencies": {
     "elm-hot": "^1.1.2",
+    "parcel": "^1.12.4",
     "parcel-plugin-static-files-copy": "^2.2.1"
   },
   "dependencies": {
@@ -12,7 +13,9 @@
     "pdfjs-dist": "^2.2.228"
   },
   "staticFiles": {
-      "staticPath": ["node_modules/pdfjs-dist/build"],
-      "staticOutDir": "static/"
+    "staticPath": [
+      "node_modules/pdfjs-dist/build"
+    ],
+    "staticOutDir": "pdfjs"
   }
 }

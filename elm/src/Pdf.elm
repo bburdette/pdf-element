@@ -9,7 +9,7 @@ module Pdf exposing
     )
 
 {-| This Pdf Elm module lets you encode and decode messages to pass to javascript,
-where the actual websocket sending and receiving will take place. See the README for more.
+where the pdf wrangling will take place. See the README for more.
 
 @docs PdfCmd
 @docs PdfMsg

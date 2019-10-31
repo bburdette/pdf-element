@@ -88,10 +88,6 @@ update msg model =
             )
 
         PdfMsg ms ->
-            let
-                _ =
-                    Debug.log "pdfmsg: " ms
-            in
             case ms of
                 Ok (Pdf.Loaded lm) ->
                     ( { model
