@@ -10,12 +10,21 @@ pdfjsLib.GlobalWorkerOptions.workerPort = new Worker(meh);
 
 class PdfElement extends HTMLElement {
   connectedCallback() {
-    var pdfName = this.getAttribute("name");
-    var pdfPage = parseInt(this.getAttribute("page"));
-    var pdfScale = parseFloat(this.getAttribute("scale"));
-    var pdf = myPdfs[pdfName];
+    var name = this.getAttribute("name");
+    var page = parseInt(this.getAttribute("page"));
+    var scale = parseFloat(this.getAttribute("scale"));
+    // var width = parseFloat(this.getAttribute("width"));
+    // var height = parseFloat(this.getAttribute("height"));
+    var pdf = myPdfs[name];
     if (pdf) {
-      renderPdf(pdf, this.canvas, pdfPage, pdfScale);
+      if (pdf.prevWidth) {
+        console.log("yep: " + pdf.prevWidth);
+        this.canvas.width = pdf.prevWidth;
+      }
+      if (pdf.prevHeight) {
+        this.canvas.height = pdf.prevHeight;
+      }
+      renderPdf(pdf, this.canvas, page, scale);
     }
   }
 
@@ -23,22 +32,14 @@ class PdfElement extends HTMLElement {
     super();
     var shadow = this.attachShadow({mode:'open'});
     this.canvas = document.createElement('canvas');
-    if (prevWidth) {
-      this.canvas.width = prevWidth;
-    }
-    if (prevHeight) {
-      this.canvas.height = prevHeight;
-    }
     shadow.appendChild(this.canvas);
   }
 }
 
-var prevWidth;
-var prevHeight;
-
 customElements.define('pdf-element', PdfElement );
 
-function renderPdf (pdf, canvas, pageno, scale) {
+function renderPdf (pdfs, canvas, pageno, scale) {
+  var pdf = pdfs.pdf;
   pdf.getPage(pageno).then(function(page) {
    
     var viewport = page.getViewport({scale: scale});
@@ -49,8 +50,10 @@ function renderPdf (pdf, canvas, pageno, scale) {
     canvas.height = viewport.height;
     canvas.width = viewport.width;
 
-    prevHeight = viewport.height;
-    prevWidth = viewport.width;
+    // here's where we mutate our argument!
+    pdfs.prevHeight = viewport.height;
+    pdfs.prevWidth = viewport.width;
+
     // Render PDF page into canvas context
     var renderContext = {
       canvasContext: context,
@@ -71,7 +74,7 @@ function pdfCommandReceiver(elmApp) {
     {
       // Asynchronous download of PDF
       pdfjsLib.getDocument(cmd.url).promise.then(function(pdf) {
-        myPdfs[cmd.name] = pdf;
+        myPdfs[cmd.name] = { pdf: pdf };
 
         elmApp.ports.receivePdfMsg.send({ msg: "loaded"
                                       , name : cmd.name
@@ -93,7 +96,7 @@ function pdfCommandReceiver(elmApp) {
       // Asynchronous download of PDF
       pdfjsLib.getDocument(buff).promise.then(function(pdf) {
         // At this point store 'pdf' into an array?
-        myPdfs[cmd.name] = pdf;
+        myPdfs[cmd.name] = { pdf: pdf };
 
         elmApp.ports.receivePdfMsg.send({ msg: "loaded"
                                       , name : cmd.name
