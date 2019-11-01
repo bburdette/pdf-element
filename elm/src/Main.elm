@@ -9,7 +9,6 @@ import Element.Input as EI
 import File exposing (File)
 import File.Select as FS
 import Html exposing (Html)
-import Html.Attributes as HA
 import Json.Decode as JD
 import Json.Encode as JE
 import Pdf
@@ -73,7 +72,7 @@ update msg model =
 
         PdfExtracted name string ->
             case String.split "base64," string of
-                [ a, b ] ->
+                [ _, b ] ->
                     ( { model | page = 1 }, pdfsend <| Pdf.OpenString { name = name, string = b } )
 
                 _ ->
@@ -179,7 +178,7 @@ view model =
                                     ]
                                   <|
                                     E.html <|
-                                        Pdf.pdfPage name model.page model.zoom
+                                        Pdf.pdfPage name model.page (Pdf.Scale model.zoom)
                                 ]
                             ]
 

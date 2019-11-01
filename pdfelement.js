@@ -52,36 +52,45 @@ function renderPdf (pdfs, canvas, pageno, scale, width, height) {
     var viewport = page.getViewport({scale: scale});
 
     if (width && height) {
-      console.log("herre");
       var wscale = width / viewport.width;
       var hscale = height / viewport.height;
-      console.log("wscale, hscale: ", wscale, hscale);
-      // var newscale;
+      var newscale;
+      // go with the smaller of the two scale factors
       if (wscale < hscale) {
-        console.log("wscale: ", scale, wscale, wscale * scale);
-        viewport.scale = wscale * scale;
+        newscale = wscale * scale;
       }
       else {
-        console.log("hscale: ", scale, hscale, hscale * scale);
-        viewport.scale = hscale * scale;
+        newscale = hscale * scale;
       }
+      // replace the initial scale with the newone.
+      scale = newscale;
+      // get another viewport, as just setting the scale doesn't affect it.
+      viewport = page.getViewport({scale: newscale});
+      // however, setting the width and height are effective.
       viewport.width = width;
       viewport.height = height;
-      console.log("scale: ", viewport.scale);
     }
     else if (width) {
       var wscale = width / viewport.width;
       scale = wscale * scale;
+      height = wscale * viewport.height;
+      // get another viewport, as just setting the scale doesn't affect it.
+      viewport = page.getViewport({scale: scale});
       viewport.width = width;
-      viewport.height = viewport.height * wscale;
+      viewport.height = height;
     }
     else if (height) {
+      var hscale = height / viewport.height;
+      scale = hscale * scale;
+      width = hscale * viewport.width;
+      // get another viewport, as just setting the scale doesn't affect it.
+      viewport = page.getViewport({scale: scale});
+      viewport.width = width;
       viewport.height = height;
     }
 
     // Prepare canvas using PDF page dimensions
     var context = canvas.getContext('2d');
-    console.log("viewport: " + viewport.width + " " + viewport.height);
     canvas.height = viewport.height;
     canvas.width = viewport.width;
 

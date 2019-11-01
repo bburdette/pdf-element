@@ -1,11 +1,12 @@
 module Pdf exposing
     ( PdfCmd(..)
     , PdfMsg(..)
+    , PdfDims(..)
+    , pdfPage
     , decodeMsg
     , encodeCmd
     , receive
     , send
-    , pdfPage
     )
 
 {-| This Pdf Elm module lets you encode and decode messages to pass to javascript,
@@ -13,6 +14,8 @@ where the pdf wrangling will take place. See the README for more.
 
 @docs PdfCmd
 @docs PdfMsg
+@docs PdfDims
+@docs pdfPage
 @docs decodeMsg
 @docs encodeCmd
 @docs receive
@@ -27,22 +30,70 @@ import Json.Decode as JD
 import Json.Encode as JE
 
 
-pdfPage : String -> Int -> Float -> Html msg
-pdfPage name page scale =
+{-| pdfPage makes an html element that displays the pdf for the document indicated by
+'name'. Before calling this function, you should open the document with a PdfCmd and
+wait for a Loaded msg.
+-}
+pdfPage : String -> Int -> PdfDims -> Html msg
+pdfPage name page pd =
+    -- use a keyed node to force refresh when parameters change.
     HK.node "span"
         []
-        [ ( name ++ String.fromInt page ++ String.fromFloat scale
+        [ ( name ++ String.fromInt page ++ pdToString pd
           , Html.node "pdf-element"
-                [ HA.attribute "name" name
-                , HA.attribute "page" (String.fromInt page)
-                , HA.attribute "width" "300"
-
-                -- , HA.attribute "height" "500"
-                -- , HA.attribute "scale" (String.fromFloat scale)
-                ]
+                ([ HA.attribute "name" name
+                 , HA.attribute "page" (String.fromInt page)
+                 ]
+                    ++ pdToAttribs pd
+                )
                 []
           )
         ]
+
+
+{-| specify the size of the pdf document.
+if you specify both height and width, the canvas will most likely have the wrong aspect
+ratio.
+-}
+type PdfDims
+    = Scale Float
+    | Width Int
+    | Height Int
+    | WidthHeight Int Int
+
+
+pdToString : PdfDims -> String
+pdToString pd =
+    case pd of
+        Scale s ->
+            "Scale" ++ String.fromFloat s
+
+        Width w ->
+            "Width" ++ String.fromInt w
+
+        Height h ->
+            "Height" ++ String.fromInt h
+
+        WidthHeight w h ->
+            "WidthHeight" ++ String.fromInt w ++ "," ++ String.fromInt h
+
+
+pdToAttribs : PdfDims -> List (Html.Attribute msg)
+pdToAttribs pd =
+    case pd of
+        Scale s ->
+            [ HA.attribute "scale" (String.fromFloat s) ]
+
+        Width w ->
+            [ HA.attribute "width" (String.fromInt w) ]
+
+        Height h ->
+            [ HA.attribute "height" (String.fromInt h) ]
+
+        WidthHeight w h ->
+            [ HA.attribute "width" (String.fromInt w)
+            , HA.attribute "height" (String.fromInt h)
+            ]
 
 
 {-| use send to make a websocket convenience function,
@@ -95,6 +146,8 @@ receive wsmMsg =
 
 
 {-| PdfCmds go from from elm out to javascript to be processed.
+Each pdf document should have a unique name, but you can make multiple
+pdf .
 -}
 type PdfCmd
     = OpenUrl { name : String, url : String }
@@ -102,8 +155,8 @@ type PdfCmd
     | Close { name : String }
 
 
-{-| PdfMsgs are responses from javascript to elm after websocket operations.
-The name should be the same string you used in Connect.
+{-| PdfMsgs are responses from javascript to elm after pdf operations.
+The name should be the same string you used in OpenUrl or OpenString.
 -}
 type PdfMsg
     = Error { name : String, error : String }
