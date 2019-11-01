@@ -35,7 +35,10 @@ pdfPage name page scale =
           , Html.node "pdf-element"
                 [ HA.attribute "name" name
                 , HA.attribute "page" (String.fromInt page)
-                , HA.attribute "scale" (String.fromFloat scale)
+                , HA.attribute "width" "300"
+
+                -- , HA.attribute "height" "500"
+                -- , HA.attribute "scale" (String.fromFloat scale)
                 ]
                 []
           )

@@ -13,18 +13,25 @@ class PdfElement extends HTMLElement {
     var name = this.getAttribute("name");
     var page = parseInt(this.getAttribute("page"));
     var scale = parseFloat(this.getAttribute("scale"));
-    // var width = parseFloat(this.getAttribute("width"));
-    // var height = parseFloat(this.getAttribute("height"));
+    if (!scale) {
+      scale = 1.0;
+    }
+    var width = parseFloat(this.getAttribute("width"));
+    var height = parseFloat(this.getAttribute("height"));
     var pdf = myPdfs[name];
     if (pdf) {
-      if (pdf.prevWidth) {
-        console.log("yep: " + pdf.prevWidth);
+      if (width) {
+        this.canvas.width = width;
+      } else if (pdf.prevWidth) {
         this.canvas.width = pdf.prevWidth;
       }
-      if (pdf.prevHeight) {
+
+      if (height) {
+        this.canvas.height = height;
+      } else if (pdf.prevHeight) {
         this.canvas.height = pdf.prevHeight;
       }
-      renderPdf(pdf, this.canvas, page, scale);
+      renderPdf(pdf, this.canvas, page, scale, width, height);
     }
   }
 
@@ -38,11 +45,39 @@ class PdfElement extends HTMLElement {
 
 customElements.define('pdf-element', PdfElement );
 
-function renderPdf (pdfs, canvas, pageno, scale) {
+function renderPdf (pdfs, canvas, pageno, scale, width, height) {
   var pdf = pdfs.pdf;
   pdf.getPage(pageno).then(function(page) {
    
     var viewport = page.getViewport({scale: scale});
+
+    if (width && height) {
+      console.log("herre");
+      var wscale = width / viewport.width;
+      var hscale = height / viewport.height;
+      console.log("wscale, hscale: ", wscale, hscale);
+      // var newscale;
+      if (wscale < hscale) {
+        console.log("wscale: ", scale, wscale, wscale * scale);
+        viewport.scale = wscale * scale;
+      }
+      else {
+        console.log("hscale: ", scale, hscale, hscale * scale);
+        viewport.scale = hscale * scale;
+      }
+      viewport.width = width;
+      viewport.height = height;
+      console.log("scale: ", viewport.scale);
+    }
+    else if (width) {
+      var wscale = width / viewport.width;
+      scale = wscale * scale;
+      viewport.width = width;
+      viewport.height = viewport.height * wscale;
+    }
+    else if (height) {
+      viewport.height = height;
+    }
 
     // Prepare canvas using PDF page dimensions
     var context = canvas.getContext('2d');
