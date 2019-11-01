@@ -1,5 +1,16 @@
 {
+  "name": "pdf-element",
+  "version": "0.1.0",
+  "main": "pdfelement.js",
   "dependencies": {
     "pdfjs-dist": "^2.2.228"
-  }
+  },
+  "repository": "https://github.com/bburdette/pdf-element",
+  "license": "BSD-3-Clause",
+  "keywords": [
+    "elm",
+    "pdf",
+    "custom element"
+  ],
+  "author": "Ben Burdette"
 }
