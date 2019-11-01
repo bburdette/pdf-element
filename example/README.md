@@ -3,6 +3,9 @@
 building this relies on an egregious hack:
 
 ```
+> cd ../npm/
+> yarn
+> cd -
 > yarn
 > parcel index.html
 ```
