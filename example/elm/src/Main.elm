@@ -139,7 +139,7 @@ topBar model =
 
             Nothing ->
                 E.none
-        , E.row [ E.alignRight ]
+        , E.row [ E.alignRight, E.spacing 5 ]
             [ E.el [ EF.color <| E.rgb 1 1 1 ] <|
                 E.text <|
                     "Page: "

@@ -1,21 +1,22 @@
 module PdfElement exposing
     ( pdfPage
+    , PdfDims(..)
     , PdfCmd(..)
     , PdfMsg(..)
-    , PdfDims(..)
     , receive
     , send
     , decodeMsg
     , encodeCmd
     )
 
-{-| This Pdf Elm module lets you encode and decode messages to pass to javascript,
-where the pdf wrangling will take place. See the README for more.
+{-| This Elm module contains the necessary machinery for communicating with javascript,
+where the actual pdf wrangling will take place. Use the Cmds to open and close documents,
+listen for Msgs indicating the Cmd results, and display the document pages with pdfPage.
 
 @docs pdfPage
+@docs PdfDims
 @docs PdfCmd
 @docs PdfMsg
-@docs PdfDims
 @docs receive
 @docs send
 @docs decodeMsg
@@ -30,7 +31,7 @@ import Json.Decode as JD
 import Json.Encode as JE
 
 
-{-| pdfPage makes an html element that displays the pdf for the document indicated by
+{-| pdfPage makes a 'custom element' that displays the pdf for the document indicated by
 'name'. Before calling this function, you should open the document with a PdfCmd and
 wait for a Loaded msg.
 -}
@@ -51,7 +52,7 @@ pdfPage name page pd =
         ]
 
 
-{-| specify the size of the pdf document. If you specify height or width, the scale will
+{-| Specify the size of the pdf document. If you specify height or width, the scale will
 be computed to fit.
 -}
 type PdfDims
@@ -145,8 +146,8 @@ receive wsmMsg =
 
 
 {-| PdfCmds go from from elm out to javascript to be processed.
-Each pdf document should have a unique name, but you can make multiple
-pdf .
+Each pdf document should have a unique name. You can make multiple pdfPage controls that
+reference a single pdf document.
 -}
 type PdfCmd
     = OpenUrl { name : String, url : String }
@@ -154,7 +155,7 @@ type PdfCmd
     | Close { name : String }
 
 
-{-| PdfMsgs are responses from javascript to elm after pdf operations.
+{-| PdfMsgs are responses from javascript to elm after PdfCmd operations.
 The name should be the same string you used in OpenUrl or OpenString.
 -}
 type PdfMsg
