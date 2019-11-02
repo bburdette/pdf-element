@@ -1,25 +1,25 @@
-module Pdf exposing
-    ( PdfCmd(..)
+module PdfElement exposing
+    ( pdfPage
+    , PdfCmd(..)
     , PdfMsg(..)
     , PdfDims(..)
-    , pdfPage
-    , decodeMsg
-    , encodeCmd
     , receive
     , send
+    , decodeMsg
+    , encodeCmd
     )
 
 {-| This Pdf Elm module lets you encode and decode messages to pass to javascript,
 where the pdf wrangling will take place. See the README for more.
 
+@docs pdfPage
 @docs PdfCmd
 @docs PdfMsg
 @docs PdfDims
-@docs pdfPage
-@docs decodeMsg
-@docs encodeCmd
 @docs receive
 @docs send
+@docs decodeMsg
+@docs encodeCmd
 
 -}
 
@@ -51,9 +51,8 @@ pdfPage name page pd =
         ]
 
 
-{-| specify the size of the pdf document.
-if you specify both height and width, the canvas will most likely have the wrong aspect
-ratio.
+{-| specify the size of the pdf document. If you specify height or width, the scale will
+be computed to fit.
 -}
 type PdfDims
     = Scale Float
@@ -102,14 +101,14 @@ like so:
       port sendPdfCommand : JE.Value -> Cmd msg
 
       pdfsend =
-          Pdf.send sendPdfCommand
+          PdfElement.send sendPdfCommand
 
 then you can call (makes a Cmd):
 
       pdfsend <|
-          Pdf.Send
-              { name = "touchpage"
-              , content = dta
+          PdfElement.OpenString
+              { name = "mypdf"
+              , string = dta
               }
 
 -}
@@ -124,12 +123,12 @@ send portfn wsc =
 
       pdfreceive : Sub Msg
       pdfreceive =
-          receivePdfMsg <| Pdf.receive PdfMsg
+          receivePdfMsg <| PdfElement.receive PdfMsg
 
 Where PdfMessage is defined in your app like this:
 
       type Msg
-          = PdfMsg (Result JD.Error Pdf.PdfMsg)
+          = PdfMsg (Result JD.Error PdfElement.PdfMsg)
           | <other message types>
 
 then in your application subscriptions:

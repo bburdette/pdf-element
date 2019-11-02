@@ -11,7 +11,7 @@ import File.Select as FS
 import Html exposing (Html)
 import Json.Decode as JD
 import Json.Encode as JE
-import Pdf
+import PdfElement
 import Task
 
 
@@ -32,15 +32,15 @@ type Msg
     | PdfOpened File
     | ZoomChanged String
     | PdfExtracted String String
-    | PdfMsg (Result JD.Error Pdf.PdfMsg)
+    | PdfMsg (Result JD.Error PdfElement.PdfMsg)
 
 
 port sendPdfCommand : JE.Value -> Cmd msg
 
 
-pdfsend : Pdf.PdfCmd -> Cmd Msg
+pdfsend : PdfElement.PdfCmd -> Cmd Msg
 pdfsend =
-    Pdf.send sendPdfCommand
+    PdfElement.send sendPdfCommand
 
 
 port receivePdfMsg : (JD.Value -> msg) -> Sub msg
@@ -48,7 +48,7 @@ port receivePdfMsg : (JD.Value -> msg) -> Sub msg
 
 pdfreceive : Sub Msg
 pdfreceive =
-    receivePdfMsg <| Pdf.receive PdfMsg
+    receivePdfMsg <| PdfElement.receive PdfMsg
 
 
 buttonStyle : List (E.Attribute msg)
@@ -73,7 +73,7 @@ update msg model =
         PdfExtracted name string ->
             case String.split "base64," string of
                 [ _, b ] ->
-                    ( { model | page = 1 }, pdfsend <| Pdf.OpenString { name = name, string = b } )
+                    ( { model | page = 1 }, pdfsend <| PdfElement.OpenString { name = name, string = b } )
 
                 _ ->
                     ( model, Cmd.none )
@@ -88,7 +88,7 @@ update msg model =
 
         PdfMsg ms ->
             case ms of
-                Ok (Pdf.Loaded lm) ->
+                Ok (PdfElement.Loaded lm) ->
                     ( { model
                         | pdfName = Just lm.name
                         , pageCount = Just lm.pageCount
@@ -96,7 +96,7 @@ update msg model =
                     , Cmd.none
                     )
 
-                Ok (Pdf.Error e) ->
+                Ok (PdfElement.Error e) ->
                     ( model, Cmd.none )
 
                 Err e ->
@@ -135,21 +135,23 @@ topBar model =
                 }
         , case model.pdfName of
             Just name ->
-                E.el [ E.centerX ] <| E.text name
+                E.row [ E.height E.fill, E.width E.fill, E.clipX ] [ E.el [ E.centerX, EB.color <| E.rgb 0 0 0 ] <| E.text name ]
 
             Nothing ->
                 E.none
-        , E.el [ EF.color <| E.rgb 1 1 1 ] <|
-            E.text <|
-                "Page: "
-                    ++ String.fromInt model.page
-                    ++ " of "
-                    ++ (model.pageCount
-                            |> Maybe.map String.fromInt
-                            |> Maybe.withDefault "?"
-                       )
-        , EI.button buttonStyle { label = E.text "prev", onPress = Just PrevPage }
-        , EI.button buttonStyle { label = E.text "next", onPress = Just NextPage }
+        , E.row [ E.alignRight ]
+            [ E.el [ EF.color <| E.rgb 1 1 1 ] <|
+                E.text <|
+                    "Page: "
+                        ++ String.fromInt model.page
+                        ++ " of "
+                        ++ (model.pageCount
+                                |> Maybe.map String.fromInt
+                                |> Maybe.withDefault "?"
+                           )
+            , EI.button buttonStyle { label = E.text "prev", onPress = Just PrevPage }
+            , EI.button buttonStyle { label = E.text "next", onPress = Just NextPage }
+            ]
         ]
 
 
@@ -178,7 +180,7 @@ view model =
                                     ]
                                   <|
                                     E.html <|
-                                        Pdf.pdfPage name model.page (Pdf.Scale model.zoom)
+                                        PdfElement.pdfPage name model.page (PdfElement.Scale model.zoom)
                                 ]
                             ]
 
