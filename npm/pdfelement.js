@@ -122,6 +122,7 @@ function pdfCommandReceiver(elmApp) {
 
         elmApp.ports.receivePdfMsg.send({ msg: "loaded"
                                       , name : cmd.name
+                                      , pageCount : pdf.numPages
                                       } );
 
       }, function (reason) {
@@ -161,6 +162,14 @@ function pdfCommandReceiver(elmApp) {
       // myPdfs[cmd.name].close();
       delete myPdfs[cmd.name];
     }
+    else
+    {
+        // unknown command  
+        elmApp.ports.receivePdfMsg.send({ msg: "error"
+                                      , name : cmd.name
+                                      , error : ("invalid command to pdf-element: " + cmd.cmd)
+                                      } );
+        console.error(reason);
+    }
   }
 }
-
