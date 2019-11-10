@@ -10,6 +10,7 @@ pdfjsLib.GlobalWorkerOptions.workerPort = new Worker(meh);
 
 class PdfElement extends HTMLElement {
   connectedCallback() {
+
     var name = this.getAttribute("name");
     var page = parseInt(this.getAttribute("page"));
     var scale = parseFloat(this.getAttribute("scale"));
@@ -18,6 +19,7 @@ class PdfElement extends HTMLElement {
     }
     var width = parseFloat(this.getAttribute("width"));
     var height = parseFloat(this.getAttribute("height"));
+
     var pdf = myPdfs[name];
     if (pdf) {
       if (width) {
@@ -89,12 +91,20 @@ function renderPdf (pdfs, canvas, pageno, scale, width, height) {
       viewport.height = height;
     }
 
-    // Prepare canvas using PDF page dimensions
-    var context = canvas.getContext('2d');
-    canvas.height = viewport.height;
-    canvas.width = viewport.width;
+    // straight from the mozilla pdf viewer, its this trick
+    // for getting non-blurry pdfs.
+    let context = canvas.getContext('2d', { alpha: false, });
+    let outputScale = getOutputScale(context);
+
+    canvas.width = (viewport.width * outputScale.sx) | 0;
+    canvas.height = (viewport.height * outputScale.sy) | 0;
+    canvas.style.height = viewport.height + 'px';
+    canvas.style.width = viewport.width + 'px';
+
+    context.scale(outputScale.sx, outputScale.sy);
 
     // here's where we mutate our argument!
+    // storing the size to make it less blinky when changing pages.
     pdfs.prevHeight = viewport.height;
     pdfs.prevWidth = viewport.width;
 
@@ -105,7 +115,7 @@ function renderPdf (pdfs, canvas, pageno, scale, width, height) {
     };
     var renderTask = page.render(renderContext);
     renderTask.promise.then(function () {
-      // console.log('renderPDF page rendered');
+      // send back a 'render complete' msg?
     });
   });
 }
@@ -173,3 +183,20 @@ function pdfCommandReceiver(elmApp) {
     }
   }
 }
+
+
+function getOutputScale(ctx) {
+  let devicePixelRatio = window.devicePixelRatio || 1;
+  let backingStoreRatio = ctx.webkitBackingStorePixelRatio ||
+                          ctx.mozBackingStorePixelRatio ||
+                          ctx.msBackingStorePixelRatio ||
+                          ctx.oBackingStorePixelRatio ||
+                          ctx.backingStorePixelRatio || 1;
+  let pixelRatio = devicePixelRatio / backingStoreRatio;
+  return {
+    sx: pixelRatio,
+    sy: pixelRatio,
+    scaled: pixelRatio !== 1,
+  };
+}
+
