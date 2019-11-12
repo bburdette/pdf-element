@@ -139,7 +139,7 @@ function pdfCommandReceiver(elmApp) {
         // PDF loading error
         elmApp.ports.receivePdfMsg.send({ msg: "error"
                                       , name : cmd.name
-                                      , error : error
+                                      , error : reason
                                       } );
         console.error(reason);
       })
