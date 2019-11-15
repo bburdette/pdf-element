@@ -31,6 +31,13 @@ import Json.Decode as JD
 import Json.Encode as JE
 
 
+{-| the version of the npm package we are expecting.
+-}
+npmversion : String
+npmversion =
+    "0.1.4"
+
+
 {-| pdfPage makes a 'custom element' that displays the pdf for the document indicated by
 'name'. Before calling this function, you should open the document with a PdfCmd and
 wait for a Loaded msg.
@@ -173,6 +180,7 @@ encodeCmd cmd =
                 [ ( "cmd", JE.string "openurl" )
                 , ( "name", JE.string msg.name )
                 , ( "url", JE.string msg.url )
+                , ( "version", JE.string npmversion )
                 ]
 
         OpenString msg ->
@@ -180,6 +188,7 @@ encodeCmd cmd =
                 [ ( "cmd", JE.string "openstring" )
                 , ( "name", JE.string msg.name )
                 , ( "string", JE.string msg.string )
+                , ( "version", JE.string npmversion )
                 ]
 
         Close msg ->

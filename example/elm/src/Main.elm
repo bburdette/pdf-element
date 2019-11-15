@@ -16,7 +16,7 @@ import Task
 
 
 type alias Model =
-    { show : Bool
+    { error : Maybe String
     , pdfName : Maybe String
     , zoom : Float
     , zoomText : String
@@ -33,6 +33,7 @@ type Msg
     | ZoomChanged String
     | PdfExtracted String String
     | PdfMsg (Result JD.Error PdfElement.PdfMsg)
+    | OkError
 
 
 port sendPdfCommand : JE.Value -> Cmd msg
@@ -97,10 +98,10 @@ update msg model =
                     )
 
                 Ok (PdfElement.Error e) ->
-                    ( model, Cmd.none )
+                    ( { model | error = Just e.error }, Cmd.none )
 
                 Err e ->
-                    ( model, Cmd.none )
+                    ( { model | error = Just (JD.errorToString e) }, Cmd.none )
 
         PrevPage ->
             if model.page > 1 then
@@ -120,6 +121,9 @@ update msg model =
 
                 Nothing ->
                     ( model, Cmd.none )
+
+        OkError ->
+            ( { model | error = Nothing }, Cmd.none )
 
 
 topBar : Model -> Element Msg
@@ -157,39 +161,44 @@ topBar model =
 
 view : Model -> Html Msg
 view model =
-    E.layout
-        [ E.inFront <| topBar model ]
-    <|
-        E.column [ E.spacing 5, E.width E.fill, E.alignTop ]
-            [ E.el [ E.transparent True ] <| topBar model
-            , case model.pdfName of
-                Just name ->
-                    if model.show then
-                        E.row [ E.width E.fill, E.alignTop ]
-                            [ E.column
-                                [ E.width E.fill
-                                , E.height E.fill
-                                , E.alignTop
-                                , E.paddingXY 5 0
-                                ]
-                                [ E.el
-                                    [ E.width E.shrink
-                                    , E.centerX
-                                    , EB.width 5
+    case model.error of
+        Just etext ->
+            E.layout [] <|
+                E.column []
+                    [ E.text etext
+                    , EI.button buttonStyle { label = E.text "okay", onPress = Just OkError }
+                    ]
+
+        Nothing ->
+            E.layout
+                [ E.inFront <| topBar model ]
+            <|
+                E.column [ E.spacing 5, E.width E.fill, E.alignTop ]
+                    [ E.el [ E.transparent True ] <| topBar model
+                    , case model.pdfName of
+                        Just name ->
+                            E.row [ E.width E.fill, E.alignTop ]
+                                [ E.column
+                                    [ E.width E.fill
+                                    , E.height E.fill
                                     , E.alignTop
+                                    , E.paddingXY 5 0
                                     ]
-                                  <|
-                                    E.html <|
-                                        PdfElement.pdfPage name model.page (PdfElement.Scale model.zoom)
+                                    [ E.el
+                                        [ E.width E.shrink
+                                        , E.centerX
+                                        , EB.width 5
+                                        , E.alignTop
+                                        ]
+                                      <|
+                                        E.html <|
+                                            PdfElement.pdfPage name model.page (PdfElement.Scale model.zoom)
+                                    ]
                                 ]
-                            ]
 
-                    else
-                        E.none
-
-                Nothing ->
-                    E.none
-            ]
+                        Nothing ->
+                            E.none
+                    ]
 
 
 type alias Flags =
@@ -198,7 +207,7 @@ type alias Flags =
 
 init : Flags -> ( Model, Cmd Msg )
 init _ =
-    ( { show = True
+    ( { error = Nothing
       , pdfName = Nothing
       , zoom = 1.0
       , zoomText = "1.0"

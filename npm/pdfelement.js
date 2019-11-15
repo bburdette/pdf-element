@@ -1,4 +1,8 @@
+// import * as pdfjsLib from "../example/node_modules/pdfjs-dist/build/pdf.js"
+
 import * as pdfjsLib from "../pdfjs-dist/build/pdf.js"
+
+import * as pkg from "./package.json"
 
 export { pdfCommandReceiver }
 
@@ -124,7 +128,14 @@ var myPdfs = {};
 
 function pdfCommandReceiver(elmApp) {
   return function (cmd) {
-    if (cmd.cmd == "openurl")
+    if (cmd.version != pkg.version) {
+      // version error!
+      elmApp.ports.receivePdfMsg.send(
+        { msg: "error"
+        , name : cmd.name
+        , error : "pdf-element package version doesn't match!"
+        });
+    } else if (cmd.cmd == "openurl")
     {
       // Asynchronous download of PDF
       pdfjsLib.getDocument(cmd.url).promise.then(function(pdf) {
