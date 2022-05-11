@@ -152,7 +152,7 @@ receive wsmMsg =
             |> wsmMsg
 
 
-{-| PdfCmds go from from elm out to javascript to be processed.
+{-| PdfCmds go from elm out to javascript to be processed.
 Each pdf document should have a unique name. You can make multiple pdfPage controls that
 reference a single pdf document.
 -}
